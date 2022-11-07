@@ -1,7 +1,16 @@
 import React, { useState } from 'react'
 
+type Square = 'X' | 'O' | ' '
+type Row = [Square, Square, Square]
+type Board = [Row, Row, Row]
+type Game = {
+  board: Board
+  id: null | number
+  winner: null | string
+}
+
 export function App() {
-  const [game, setGame] = useState({
+  const [game, setGame] = useState<Game>({
     board: [
       [' ', ' ', ' '],
       [' ', ' ', ' '],
@@ -12,6 +21,9 @@ export function App() {
   })
 
   async function handleClickCell(row: Number, column: number) {
+    if (game.id === null || game.winner || game.board[row][column] !== ' ') {
+      return
+    }
     const url = `https://sdg-tic-tac-toe-api.herokuapp.com/game/${game.id}`
 
     const body = { row, column }
@@ -23,7 +35,7 @@ export function App() {
     })
 
     if (response.ok) {
-      const newGameState = await response.json()
+      const newGameState = (await response.json()) as Game
 
       setGame(newGameState)
     }
@@ -39,34 +51,34 @@ export function App() {
     )
 
     if (response.ok) {
-      const newGameState = await response.json()
+      const newGameState = (await response.json()) as Game
 
       setGame(newGameState)
     }
   }
 
+  const header = game.winner ? `${game.winner} is the winner` : 'Tic Tac Toe'
+
   return (
     <div>
       <h1>
-        Tic Tac Toe - {game.id}
+        {header} - {game.id}
         <button onClick={handleNewGame}>New</button>
       </h1>
       <ul>
-        <li
-          onClick={() => {
-            handleClickCell(0, 0)
-          }}
-        >
-          {game.board[0][0]}
-        </li>
-        <li onClick={() => handleClickCell(0, 1)}>{game.board[0][1]}</li>
-        <li onClick={() => handleClickCell(0, 2)}>{game.board[0][2]}</li>
-        <li onClick={() => handleClickCell(1, 0)}>{game.board[1][0]}</li>
-        <li onClick={() => handleClickCell(1, 1)}>{game.board[1][1]}</li>
-        <li onClick={() => handleClickCell(1, 2)}>{game.board[1][2]}</li>
-        <li onClick={() => handleClickCell(2, 0)}>{game.board[2][0]}</li>
-        <li onClick={() => handleClickCell(2, 1)}>{game.board[2][1]}</li>
-        <li onClick={() => handleClickCell(2, 2)}>{game.board[2][2]}</li>
+        {game.board.map(function (row, rowIndex) {
+          return row.map(function (column, columnIndex) {
+            return (
+              <li
+                key={columnIndex}
+                className={column === ' ' ? undefined : 'taken'}
+                onClick={() => handleClickCell(rowIndex, columnIndex)}
+              >
+                {game.board[rowIndex][columnIndex]}
+              </li>
+            )
+          })
+        })}
       </ul>
     </div>
   )
