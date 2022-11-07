@@ -11,8 +11,22 @@ export function App() {
     winner: null,
   })
 
-  function handleClickCell(row: Number, column: number) {
-    console.log({ row, column })
+  async function handleClickCell(row: Number, column: number) {
+    const url = `https://sdg-tic-tac-toe-api.herokuapp.com/game/${game.id}`
+
+    const body = { row, column }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+    if (response.ok) {
+      const newGameState = await response.json()
+
+      setGame(newGameState)
+    }
   }
 
   async function handleNewGame() {
